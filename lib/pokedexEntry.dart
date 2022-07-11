@@ -17,15 +17,12 @@ class PokemonEntry extends StatefulWidget {
   final String url;
 
   @override
-  State<PokemonEntry> createState() => _PokemonState(url);
+  State<PokemonEntry> createState() => _PokemonState();
 }
 
 class _PokemonState extends State<PokemonEntry> {
-  final String url;
-  _PokemonState(this.url);
-
   final _biggerFont = const TextStyle(fontSize: 18);
-  late Pokemon _pokemon = Pokemon('name', ['type']);
+  late Pokemon _pokemon = Pokemon('loading...', ['loading']);
 
   @override
   void initState() {
@@ -34,7 +31,7 @@ class _PokemonState extends State<PokemonEntry> {
   }
 
   void fetchPokemon() async {
-    http.Response response = await http.get(Uri.parse(url));
+    http.Response response = await http.get(Uri.parse(widget.url));
     if (response.statusCode == 200) {
       final pokeInfo = json.decode(response.body);
       setState(() {
