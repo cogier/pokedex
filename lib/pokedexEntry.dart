@@ -6,8 +6,9 @@ import 'package:http/http.dart' as http;
 class Pokemon {
   final String name;
   final List<String> types;
+  final String? imageUrl;
 
-  Pokemon(this.name, this.types);
+  Pokemon(this.name, this.types, this.imageUrl);
 }
 
 class PokemonEntry extends StatefulWidget {
@@ -22,7 +23,7 @@ class PokemonEntry extends StatefulWidget {
 
 class _PokemonState extends State<PokemonEntry> {
   final _biggerFont = const TextStyle(fontSize: 18);
-  late Pokemon _pokemon = Pokemon('loading...', ['loading']);
+  late Pokemon _pokemon = Pokemon('loading...', ['loading'], null);
 
   @override
   void initState() {
@@ -35,8 +36,12 @@ class _PokemonState extends State<PokemonEntry> {
     if (response.statusCode == 200) {
       final pokeInfo = json.decode(response.body);
       setState(() {
-        _pokemon =
-            Pokemon(pokeInfo['name'], [pokeInfo['types'][0]['type']['name']]);
+        _pokemon = Pokemon(
+            pokeInfo['name'],
+            pokeInfo['types']
+                .map<String>((type) => type['type']['name'] as String)
+                .toList(),
+            pokeInfo['sprites']['other']['official-artwork']['front_default']);
       });
     }
   }
@@ -45,14 +50,25 @@ class _PokemonState extends State<PokemonEntry> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: const Text('Pokemon List'),
+          title: Text(_pokemon.name),
           backgroundColor: Colors.red[600],
         ),
-        body: ListTile(
-          title: Text(
-            _pokemon.name,
-            style: _biggerFont,
+        body: Column(children: [
+          Expanded(
+            child: ListView.builder(
+                itemCount: _pokemon.types.length,
+                itemBuilder: (context, i) {
+                  return Column(children: [
+                    Text(
+                      "Type ${i + 1}: ${_pokemon.types[i]}",
+                      style: _biggerFont,
+                    ),
+                  ]);
+                }),
           ),
-        ));
+          _pokemon.imageUrl != null
+              ? Image.network(_pokemon.imageUrl!)
+              : Container()
+        ]));
   }
 }
