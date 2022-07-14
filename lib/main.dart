@@ -75,19 +75,22 @@ class _PokemonListState extends State<PokemonList> {
         itemCount: _pokemon.length,
         padding: const EdgeInsets.all(16.0),
         itemBuilder: (context, i) {
-          if (i.isOdd || _pokemon.isEmpty) return const Divider();
+          // if (i.isOdd || _pokemon.isEmpty) return const Divider();
 
-          return ListTile(
-            title: Text(
-              _pokemon[i].name,
-              style: _biggerFont,
+          return Column(children: [
+            ListTile(
+              title: Text(
+                _pokemon[i].name,
+                style: _biggerFont,
+              ),
+              onTap: () {
+                Navigator.of(context).push(MaterialPageRoute(
+                  builder: (context) => PokemonEntry(url: _pokemon[i].url),
+                ));
+              },
             ),
-            onTap: () {
-              Navigator.of(context).push(MaterialPageRoute(
-                builder: (context) => PokemonEntry(url: _pokemon[i].url),
-              ));
-            },
-          );
+            const Divider(),
+          ]);
         },
       ),
     );
