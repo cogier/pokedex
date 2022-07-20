@@ -56,7 +56,8 @@ class _PokemonListState extends State<PokemonList> {
     if (response.statusCode == 200) {
       pokeList = json
           .decode(response.body)['results']
-          .map<PokemonListing>((mon) => PokemonListing(mon['name'], mon['url']))
+          .map<PokemonListing>((mon) =>
+              PokemonListing(capitalize(mon['name'].toString()), mon['url']))
           .toList();
       setState(() {
         _pokemon = pokeList;
@@ -75,8 +76,6 @@ class _PokemonListState extends State<PokemonList> {
         itemCount: _pokemon.length,
         padding: const EdgeInsets.all(16.0),
         itemBuilder: (context, i) {
-          // if (i.isOdd || _pokemon.isEmpty) return const Divider();
-
           return Column(children: [
             ListTile(
               title: Text(
@@ -85,7 +84,8 @@ class _PokemonListState extends State<PokemonList> {
               ),
               onTap: () {
                 Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) => PokemonEntry(url: _pokemon[i].url),
+                  builder: (context) => PokemonEntry(
+                      name: _pokemon[i].name, url: _pokemon[i].url),
                 ));
               },
             ),
@@ -95,4 +95,8 @@ class _PokemonListState extends State<PokemonList> {
       ),
     );
   }
+}
+
+String capitalize(String text) {
+  return text.substring(0, 1).toUpperCase() + text.substring(1);
 }
