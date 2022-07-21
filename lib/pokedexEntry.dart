@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:startup_namer/evolutionChart.dart';
 
 class Pokemon {
   final String name;
@@ -21,9 +22,10 @@ class Pokemon {
 
 class EvolutionLink {
   final String name;
+  final int id;
   final List<EvolutionLink> evolvesInto;
 
-  EvolutionLink(this.name, [this.evolvesInto = const []]);
+  EvolutionLink(this.name, this.id, [this.evolvesInto = const []]);
 }
 
 class PokemonEntry extends StatefulWidget {
@@ -60,7 +62,8 @@ class _PokemonState extends State<PokemonEntry> {
             .map<EvolutionLink>((evo) => buildChain(evo, depth + 1))
             .toList()
         : [];
-    return EvolutionLink(evolution['species']['name'], evolvesTo);
+    return EvolutionLink(evolution['species']['name'],
+        getIdFromUrl(evolution['species']['url']), evolvesTo);
   }
 
   void fetchPokemon() async {
@@ -104,49 +107,39 @@ class _PokemonState extends State<PokemonEntry> {
           backgroundColor: Colors.red[600],
         ),
         body: Column(children: [
-          Expanded(
-            child: ListView.separated(
-              itemCount: _pokemon.types.length,
-              padding: const EdgeInsets.only(top: 10),
-              itemBuilder: (context, i) {
-                return Column(children: [
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      "Type ${i + 1}: ${_pokemon.types[i]}",
-                      style: _biggerFont,
-                    ),
-                  )
-                ]);
-              },
-              separatorBuilder: (context, index) => const SizedBox(
-                height: 10,
-              ),
+          ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: _pokemon.types.length,
+            padding: const EdgeInsets.only(top: 10),
+            itemBuilder: (context, i) {
+              return Column(children: [
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    "Type ${i + 1}: ${_pokemon.types[i]}",
+                    style: _biggerFont,
+                  ),
+                )
+              ]);
+            },
+            separatorBuilder: (context, index) => const SizedBox(
+              height: 10,
             ),
           ),
           _pokemon.imageUrl != null
               ? Image.network(_pokemon.imageUrl!)
               : Container(),
-          Expanded(
-            child: ListView.separated(
-              itemCount: evolutionDepth,
-              padding: const EdgeInsets.only(top: 10),
-              itemBuilder: (context, i) {
-                return Column(children: [
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      "Type ${i + 1}: ${_pokemon.evolutionChain[0]}",
-                      style: _biggerFont,
-                    ),
-                  )
-                ]);
-              },
-              separatorBuilder: (context, index) => const SizedBox(
-                height: 10,
-              ),
-            ),
-          ),
+          evolutionDepth > 1
+              ? EvolutionChart(
+                  depth: evolutionDepth, chain: _pokemon.evolutionChain)
+              : Container(),
         ]));
   }
+}
+
+int getIdFromUrl(String url) {
+  var sanitizedUrl = url.substring(0, url.length - 1);
+  sanitizedUrl = sanitizedUrl.substring(sanitizedUrl.lastIndexOf('/') + 1);
+  return int.parse(sanitizedUrl);
 }
