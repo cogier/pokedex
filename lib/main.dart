@@ -40,8 +40,11 @@ class PokemonList extends StatefulWidget {
 }
 
 class _PokemonListState extends State<PokemonList> {
+  List<PokemonListing> _loadedMon = [];
+  List<PokemonListing> _filteredMon = [];
   final _biggerFont = const TextStyle(fontSize: 18);
-  List<PokemonListing> _pokemon = [];
+  String _filter = "";
+  final TextEditingController _textController = TextEditingController();
 
   @override
   void initState() {
@@ -60,7 +63,7 @@ class _PokemonListState extends State<PokemonList> {
               PokemonListing(capitalize(mon['name'].toString()), mon['url']))
           .toList();
       setState(() {
-        _pokemon = pokeList;
+        _loadedMon = pokeList;
       });
     }
   }
@@ -68,32 +71,68 @@ class _PokemonListState extends State<PokemonList> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Pokemon List'),
-        backgroundColor: Colors.red[600],
-      ),
-      body: ListView.builder(
-        itemCount: _pokemon.length,
-        padding: const EdgeInsets.all(16.0),
-        itemBuilder: (context, i) {
-          return Column(children: [
-            ListTile(
-              title: Text(
-                _pokemon[i].name,
-                style: _biggerFont,
-              ),
-              onTap: () {
-                Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) => PokemonEntry(
-                      name: _pokemon[i].name, url: _pokemon[i].url),
-                ));
-              },
-            ),
-            const Divider(),
-          ]);
-        },
-      ),
-    );
+        appBar: AppBar(
+          title: const Text('Pokemon List'),
+          backgroundColor: Colors.red[600],
+        ),
+        body: Column(children: [
+          TextField(
+            controller: _textController,
+            decoration: InputDecoration(
+                border: const OutlineInputBorder(),
+                hintText: 'Enter a search term',
+                suffixIcon: IconButton(
+                    onPressed: () {
+                      _textController.clear();
+                      setState(() {
+                        _filter = "";
+                      });
+                    },
+                    icon: const Icon(Icons.clear, color: Colors.red))),
+            onChanged: (String value) {
+              setState(() {
+                _filter = value;
+              });
+            },
+          ),
+          Expanded(
+              child: ListView.builder(
+            itemCount: _filteredMon.length,
+            padding: const EdgeInsets.all(16.0),
+            itemBuilder: (context, i) {
+              return Column(children: [
+                ListTile(
+                  title: Text(
+                    _filteredMon[i].name,
+                    style: _biggerFont,
+                  ),
+                  onTap: () {
+                    Navigator.of(context).push(MaterialPageRoute(
+                      builder: (context) => PokemonEntry(
+                          name: _filteredMon[i].name, url: _filteredMon[i].url),
+                    ));
+                  },
+                ),
+                const Divider(),
+              ]);
+            },
+          ))
+        ]));
+  }
+
+  @override
+  void setState(VoidCallback fn) {
+    fn();
+
+    if (_filter.isEmpty) {
+      _filteredMon = _loadedMon;
+    } else {
+      _filteredMon = _loadedMon
+          .where((f) => f.name.toLowerCase().contains(_filter.toLowerCase()))
+          .toList();
+    }
+
+    super.setState(() {});
   }
 }
 
