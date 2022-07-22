@@ -11,23 +11,38 @@ class EvolutionChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(child: Row(children: chainToColumns()));
+    return Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: chainToColumns());
   }
 
   List<Widget> chainToColumns() {
     List<Widget> columns = [];
-    columns.add(Column(
-        children: [getEvoRow(chain[0].name, chain[0].id, isFirst: true)]));
+    columns.add(Column(children: [getEvoMon(chain[0].name, chain[0].id)]));
+    columns.add(Column(children: const [
+      Icon(
+        Icons.arrow_forward,
+        color: Colors.black,
+        size: 24.0,
+      )
+    ]));
     columns.add(Column(
         children: chain[0]
             .evolvesInto
-            .map<Widget>((mon) => getEvoRow(mon.name, mon.id))
+            .map<Widget>((mon) => getEvoMon(mon.name, mon.id))
             .toList()));
     if (depth == 3) {
+      columns.add(Column(children: const [
+        Icon(
+          Icons.arrow_forward,
+          color: Colors.black,
+          size: 24.0,
+        )
+      ]));
       List<Widget> thirdColumn = [];
       for (var midEvo in chain[0].evolvesInto) {
         for (var thirdEvo in midEvo.evolvesInto) {
-          thirdColumn.add(getEvoRow(thirdEvo.name, thirdEvo.id));
+          thirdColumn.add(getEvoMon(thirdEvo.name, thirdEvo.id));
         }
       }
       columns.add(Column(children: thirdColumn));
@@ -36,26 +51,11 @@ class EvolutionChart extends StatelessWidget {
   }
 }
 
-Widget getEvoRow(String name, int id, {bool isFirst = false}) {
-  List<Widget> row = isFirst
-      ? []
-      : [
-          const Icon(
-            Icons.arrow_forward,
-            color: Colors.black,
-            size: 24.0,
-          )
-        ];
-
-  row.add(Column(children: [
+Widget getEvoMon(String name, int id) {
+  return Column(children: [
     Image.network(
         "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/$id.png",
         scale: 10),
     Text(capitalize(name))
-  ]));
-
-  return Row(
-    mainAxisAlignment: MainAxisAlignment.spaceAround,
-    children: row,
-  );
+  ]);
 }

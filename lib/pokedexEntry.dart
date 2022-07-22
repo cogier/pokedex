@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:startup_namer/evolutionChart.dart';
 
+import 'main.dart';
+
 class Pokemon {
   final String name;
   final List<String> types;
@@ -106,27 +108,16 @@ class _PokemonState extends State<PokemonEntry> {
           title: Text(_pokemon.name),
           backgroundColor: Colors.red[600],
         ),
-        body: Column(children: [
-          ListView.separated(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: _pokemon.types.length,
-            padding: const EdgeInsets.only(top: 10),
-            itemBuilder: (context, i) {
-              return Column(children: [
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    "Type ${i + 1}: ${_pokemon.types[i]}",
-                    style: _biggerFont,
-                  ),
-                )
-              ]);
-            },
-            separatorBuilder: (context, index) => const SizedBox(
-              height: 10,
-            ),
-          ),
+        body: SingleChildScrollView(
+            child: Column(children: [
+          Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: _pokemon.types
+                  .map<Text>((type) => Text(
+                        capitalize(type),
+                        style: _biggerFont,
+                      ))
+                  .toList()),
           _pokemon.imageUrl != null
               ? Image.network(_pokemon.imageUrl!)
               : Container(),
@@ -134,7 +125,7 @@ class _PokemonState extends State<PokemonEntry> {
               ? EvolutionChart(
                   depth: evolutionDepth, chain: _pokemon.evolutionChain)
               : Container(),
-        ]));
+        ])));
   }
 }
 
